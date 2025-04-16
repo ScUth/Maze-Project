@@ -5,7 +5,10 @@ class Config:
         'COLOR_WHITE' : (255, 255, 255)
     }
     KEY = {
-        pg.K_r : "R"
+        pg.K_UP: "UP",
+        pg.K_DOWN: "DOWN",
+        pg.K_LEFT: "LEFT",
+        pg.K_RIGHT: "RIGHT"
     }
     
     @classmethod

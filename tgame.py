@@ -4,6 +4,7 @@ import pygame as pg
 from tconfig import Config
 from data_json import Config_json
 from tmaze import Maze_Gen
+from tplayer import Player
 
 class Game:
     __config = Config_json("config.json")
@@ -22,6 +23,7 @@ class Game:
         )
         )
         self.maze = Maze_Gen()
+        self.player = Player()
         self.maze.gen_maze()
         self.__screen.fill(Config.get('COLOR_BLACK'))
         self.running = True
@@ -39,6 +41,8 @@ class Game:
                     self.maze.set_nearby_origin()
                 if event.key == pg.K_i:
                     self.get_data()
+                if event.key in Config.KEY:
+                    print(Config.KEY[event.key])
     
     def get_data(self):
         print('-'*20)
