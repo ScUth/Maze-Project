@@ -26,6 +26,7 @@ class Maze_Gen:
         self.origin_his_pos = []
         self.line = []
         self.corner = []
+        self.grid = []
         
     def drawGrid(self):
         grid_rect = []
@@ -58,9 +59,11 @@ class Maze_Gen:
         ok_coord = [coord for coord in new_coord if coord in rect_lis and coord not in recent]
         
         if not ok_coord:
-            return
+            picked_coord = rd.choice(new_coord)
+        else:
+            picked_coord = rd.choice(ok_coord)
 
-        picked_coord = rd.choice(ok_coord)
+        # print(ok_coord)
         print(f"original origin was at {self.origin_pos}, origin now at {picked_coord}")
         self.origin_his_pos.append(self.origin_pos)
         # print(self.origin_his)

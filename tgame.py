@@ -42,7 +42,7 @@ class Game:
                 if event.key == pg.K_i:
                     self.get_data()
                 if event.key in Config.KEY:
-                    print(Config.KEY[event.key])
+                    print(Config.KEY[event.key]) # test print
     
     def get_data(self):
         print('-'*20)
@@ -64,23 +64,13 @@ class Game:
 
                 # create origin
                 origin = self.maze.origin_pos # (x, y, box_size, box_size)
-
-                # make line
-                        # if self.maze_status is False and rect < rect_lis[-1]:
-                        #     self.maze.gen_maze(rect.x, rect.y, self.__screen)
-                        # elif self.maze_status is False and rect == rect_lis[-1]:
-                        #     self.maze_status = True
-                        # else:
-                        #     pass
-                        # print(self.maze_status)
                     
                 self.maze.draw_maze(rect.x, rect.y, self.__screen, self.maze_status) # test gen maze
-                
-                # if rect != origin:
-                #     pg.draw.line(self.__screen, Config.get('COLOR_WHITE'), (rect.x + 13.5, rect.y + 2), (end_pos_x + 13.5, end_pos_y + 2), 2)
-                
+            
                 # mark origin
                 pg.draw.circle(self.__screen, (255, 0, 0), (origin.x, origin.y), 2)
+                
+                self.player.draw(self.__screen)
             pg.display.update()
 
 if __name__ == '__main__':
