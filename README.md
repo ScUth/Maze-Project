@@ -3,5 +3,5 @@ requirement (temporary)
 `pygame`
 
 how to play (temporary)
-1. up, down, right, left for movement.
-2. <r> for move the origin.
+1. \< up, down, right, left > for movement.
+2. \< r > for move the origin.
