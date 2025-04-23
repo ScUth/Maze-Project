@@ -12,8 +12,8 @@ class Game:
     def __init__(self):
         pg.init()
         pg.display.set_caption("Maze Project")
-        img = pg.image.load(r'C:\Users\scien\Documents\cmand\py\proj ref\maze_generator\icon1.png')
-        pg.display.set_icon(img)
+        # img = pg.image.load(r'C:\Users\scien\Documents\cmand\py\proj ref\maze_generator\icon1.png')
+        # pg.display.set_icon(img)
         self.__config._load_json()
         self.height = self.__config._get_data("WINDOWS", "height")
         self.width = self.__config._get_data("WINDOWS", "width")
@@ -28,6 +28,7 @@ class Game:
         self.__screen.fill(Config.get('COLOR_BLACK'))
         self.running = True
         self.maze_status = False
+        self.clock = pg.time.Clock()
         
     def __game_reset(self):
         pass
@@ -41,8 +42,9 @@ class Game:
                     self.maze.set_nearby_origin()
                 if event.key == pg.K_i:
                     self.get_data()
-                if event.key in Config.KEY:
-                    print(Config.KEY[event.key]) # test print
+                # if event.key in Config.KEY:
+                #     # print(Config.KEY[event.key]) # test print
+                #     self.player.move(event.key)
     
     def get_data(self):
         print('-'*20)
@@ -66,12 +68,18 @@ class Game:
                 origin = self.maze.origin_pos # (x, y, box_size, box_size)
                     
                 self.maze.draw_maze(rect.x, rect.y, self.__screen, self.maze_status) # test gen maze
-            
+                
                 # mark origin
                 pg.draw.circle(self.__screen, (255, 0, 0), (origin.x, origin.y), 2)
                 
-                self.player.draw(self.__screen)
+                # check if maze is solvable then stop generating.
+                
+            self.player.draw(self.__screen)
+            self.player.move()
+            self.player.keep_on_screen(self.width, self.height)
             pg.display.update()
+            self.clock.tick(120)
+            
 
 if __name__ == '__main__':
     g1 = Game()

@@ -18,7 +18,7 @@ class Maze_Gen:
         
         # maze config
         self.size = (10, 10)
-        self.box_size = 30
+        self.box_size = self.__config._get_data("MAZE", "box_size")
         self.columns = self.mapwidth // self.box_size
         self.rows = math.ceil(self.mapheight /   self.box_size)
         self.origin_pos = self.drawGrid()[len(self.drawGrid()) - 1]

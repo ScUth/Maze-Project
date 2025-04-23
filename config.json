@@ -1,14 +1,15 @@
 {
     "WINDOWS": [
         {   
-            "width" : 800,
-            "height" : 600
+            "width" : 1000,
+            "height" : 800
         }
     ],
     "MAZE" : [
         {
-            "width" : 300,
-            "height" : 200
+            "width" : 600,
+            "height" : 400,
+            "box_size" : 30
         }
     ]
 }
