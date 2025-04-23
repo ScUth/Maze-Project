@@ -17,7 +17,6 @@ class Config_json:
         # print(self.db[table][0][key])
         return self.db[table][0][key]
     
-    
 # cj = Config_json("config.json")
 # cj._load_json()
 # cj._get_data("WINDOWS", "height")

@@ -12,8 +12,8 @@ class Game:
     def __init__(self):
         pg.init()
         pg.display.set_caption("Maze Project")
-        # img = pg.image.load(r'C:\Users\scien\Documents\cmand\py\proj ref\maze_generator\icon1.png')
-        # pg.display.set_icon(img)
+        img = pg.image.load(r'icon1.png')
+        pg.display.set_icon(img)
         self.__config._load_json()
         self.height = self.__config._get_data("WINDOWS", "height")
         self.width = self.__config._get_data("WINDOWS", "width")
