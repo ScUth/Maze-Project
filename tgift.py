@@ -8,3 +8,4 @@ class Gift:
     
     def collect(self):
         pass
+    

@@ -7,8 +7,8 @@
     ],
     "MAZE" : [
         {
-            "width" : 600,
-            "height" : 400,
+            "width" : 800,
+            "height" : 500,
             "box_size" : 30
         }
     ]

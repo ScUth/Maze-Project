@@ -20,13 +20,28 @@ class Maze_Gen:
         self.size = (10, 10)
         self.box_size = self.__config._get_data("MAZE", "box_size")
         self.columns = self.mapwidth // self.box_size
-        self.rows = math.ceil(self.mapheight /   self.box_size)
+        self.rows = math.ceil(self.mapheight/self.box_size)
         self.origin_pos = self.drawGrid()[len(self.drawGrid()) - 1]
         self.origin_his = []
         self.origin_his_pos = []
         self.line = []
+        self.main_line = []
         self.corner = []
-        self.grid = []
+        self.visited = set() # New: Track visited cells
+        self.maze_grid = set()
+        # self.shift_time = 600
+        self.current_shifts = 0
+        self.total = math.ceil(self.mapheight/self.box_size) * math.ceil(self.mapwidth/self.box_size)
+        self.maze_status = False
+        self.combine_status = False
+        
+        # set config
+        Config.set('MAZE_PROPERTY', 'BOTTOM_RIGHT', (self.drawGrid()[-1].x, self.drawGrid()[-1].y))
+        Config.set('MAZE_PROPERTY', 'TOP_LEFT', (self.drawGrid()[0].x, self.drawGrid()[0].y))
+        Config.set('MAZE_PROPERTY', 'TOP_RIGHT', (self.drawGrid()[0].x, self.drawGrid()[-1].y))
+        Config.set('MAZE_PROPERTY', 'BOTTOM_LEFT', (self.drawGrid()[-1].x, self.drawGrid()[0].y))
+        Config.set('MAZE_PROPERTY', 'STARTING_POINT', (self.drawGrid()[0].x, self.drawGrid()[(self.mapheight // self.box_size)//2].y))
+        Config.set('MAZE_PROPERTY', 'ENDING_POINT', (self.drawGrid()[-1].x, self.drawGrid()[(self.mapheight // self.box_size)//2].y))
         
     def drawGrid(self):
         grid_rect = []
@@ -39,10 +54,89 @@ class Maze_Gen:
                 grid_rect.append(rect)
         return grid_rect
     
+    def drawGrid_2(self, screen):
+        rect_lis = self.drawGrid()
+        
+        boxd2 = self.box_size // 2
+        for rect in rect_lis:
+            self.maze_grid.add((rect.x + boxd2, rect.y + boxd2))
+            self.maze_grid.add((rect.x + boxd2, rect.y - boxd2))
+            self.maze_grid.add((rect.x - boxd2, rect.y - boxd2))
+            self.maze_grid.add((rect.x - boxd2, rect.y + boxd2))
+        
+        # for pgrid in self.maze_grid:
+        #     pg.draw.circle(screen, (255, 0, 255), (pgrid[0], pgrid[1]), 2)
+            
+    def orientation(self, a, b, c):
+        # Cross-product to determine orientation
+        val = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+        if val == 0:
+            return 0  # Collinear
+        return 1 if val > 0 else 2  # Counter-clockwise or clockwise
+
+    def segments_intersect(self, A, B, C, D):
+        # Check if segments AB and CD intersect
+        o1 = self.orientation(A, B, C)
+        o2 = self.orientation(A, B, D)
+        o3 = self.orientation(C, D, A)
+        o4 = self.orientation(C, D, B)
+
+        # General case: straddling
+        if o1 != o2 and o3 != o4:
+            return True
+
+        # Special cases (collinear and overlapping)
+        if o1 == 0 and self.on_segment(A, C, B):
+            return True
+        if o2 == 0 and self.on_segment(A, D, B):
+            return True
+        if o3 == 0 and self.on_segment(C, A, D):
+            return True
+        if o4 == 0 and self.on_segment(C, B, D):
+            return True
+
+        return False
+
+    def on_segment(self, p, q, r):
+        # Check if point q lies on segment pr
+        if (min(p[0], r[0]) <= q[0] <= max(p[0], r[0]) and (min(p[1], r[1]) <= q[1] <= max(p[1], r[1]))):
+            return True
+        return False
+
+    def can_draw_line(self, new_line, existing_lines):
+        # Check if new_line intersects with any existing line
+        A, B = new_line['start'], new_line['end']
+        for line in existing_lines:
+            C, D = line['start'], line['end']
+            if self.segments_intersect(A, B, C, D):
+                return False
+        return True
+            
+    def check_line(self):
+        # for dot in self.maze_grid:
+        #     if (dot[0] + self.box_size, dot[1]) in self.maze_grid:
+        #         # print(self.line)
+        #         pg.draw.line(screen, (255, 255, 0), (dot[0], dot[1]), (dot[0] + self.box_size, dot[1]))
+        #     if (dot[0], dot[1] + self.box_size) in self.maze_grid:
+        #         pg.draw.line(screen, (255, 255, 0), (dot[0], dot[1]), (dot[0], dot[1] + self.box_size))###################
+        for dot in self.maze_grid:
+            right_line = {'start': (dot[0], dot[1]), 'end': (dot[0] + self.box_size, dot[1])}
+            if self.can_draw_line(right_line, self.line):
+                if right_line not in self.main_line and (dot[0] + self.box_size, dot[1]) in self.maze_grid:
+                    self.main_line.append(right_line)
+            down_line = {'start': (dot[0], dot[1]), 'end': (dot[0], dot[1] + self.box_size)}
+            if self.can_draw_line(down_line, self.line):
+                if down_line not in self.main_line and (dot[0], dot[1] + self.box_size) in self.maze_grid:
+                    self.main_line.append(down_line)
+                
+    def get_main_line(self):
+        return self.main_line
+    
     def set_nearby_origin(self):
         max_orihis = 7
         recent = set(self.origin_his[-max_orihis:])
         rect_lis = self.drawGrid()
+
         a_ori = self.origin_pos.y + self.box_size
         b_ori = self.origin_pos.y - self.box_size
         l_ori = self.origin_pos.x - self.box_size
@@ -64,26 +158,28 @@ class Maze_Gen:
             picked_coord = rd.choice(ok_coord)
 
         # print(ok_coord)
-        print(f"original origin was at {self.origin_pos}, origin now at {picked_coord}")
+        # print(f"original origin was at {self.origin_pos}, origin now at {picked_coord}")
         self.origin_his_pos.append(self.origin_pos)
-        # print(self.origin_his)
-        for i in rect_lis:
-            if i == picked_coord:
-                self.origin_pos = i
+        self.visited.add((self.origin_pos.x, self.origin_pos.y))
+        for rect in rect_lis:
+            if rect == picked_coord:
+                self.origin_pos = rect
                 self.origin_his.append(picked_coord)
-        # print(f"confirmed origin : {self.origin_pos}, set : {recent}")
     
     def get_Grid(self):
         # useless function
         return self.drawGrid()
     
-    def update_maze(self, start_pos, new_end):
-        for line in self.line:
-            if line["start"] == start_pos:
-                line["end"] = new_end
-                break
+    def update_maze(self):
+        if len(self.origin_his) >= 1:
+            previous_origin = self.origin_his_pos[-1]
+            for line in self.line:
+                if line["start"] == (previous_origin.x, previous_origin.y):
+                    line["end"] = (self.origin_pos.x, self.origin_pos.y)
+                    break
+            
 
-    def gen_maze(self): # ori_ = origin
+    def gen_maze(self):
         rect_lis = self.drawGrid()
         self.line.clear()
         
@@ -95,23 +191,44 @@ class Maze_Gen:
                 start = (rect.x, rect.y)  # center of the dot
                 end = (rect.x, rect.y + self.box_size)  # move right
             self.line.append({"start": start, "end": end})
+    
+    # def combine_line(self):
+    #     # for combine the continuous line
+    #     # for line in self.main_line:
+    #     #     pass
+    #     self.com
 
-    def draw_maze(self, x, y, screen, status):
-        # gen maze from default template
-        rect_lis = self.drawGrid()
-            # if status is False and x < rect_lis[-1].x:
-            #     self.gen_maze(x, y, screen)
-            # elif status is False and x == rect_lis[-1].x:
-            #     status = True
-        screen.fill(Config.get('COLOR_BLACK'))
-        # self.gen_maze()
-        for line in self.line:
-            if line["start"] != (self.origin_pos.x, self.origin_pos.y):
-                pg.draw.line(screen, (255, 255, 255), line["start"], line["end"])
-        # rules
-        if len(self.origin_his) >= 1:
-            previous_origin = self.origin_his_pos[-1]
-            pg.draw.circle(screen, (0, 255, 0), (previous_origin.x, previous_origin.y), 2)
-            self.update_maze((previous_origin.x, previous_origin.y), (self.origin_pos.x, self.origin_pos.y))
-            
-# do next = figure it out how to avoid corner and make it playable
+    def draw_maze(self, x, y, screen):
+        if self.maze_status:
+            for line in self.main_line:
+                pg.draw.line(screen, (255, 255, 0), line["start"], line["end"])
+
+        if len(self.visited) < self.total: # +1 until got the self.shift_time then stop shifting
+            for _ in range(10):
+                self.set_nearby_origin()
+                self.current_shifts += 1
+                for line in self.line:
+                    if line["start"] != (self.origin_pos.x, self.origin_pos.y):
+                        pg.draw.line(screen, (255, 255, 255), line["start"], line["end"])
+                # if len(self.origin_his) >= 1:
+                #     previous_origin = self.origin_his_pos[-1]
+                #     pg.draw.circle(screen, (0, 255, 0), (previous_origin.x, previous_origin.y), 2)
+                #     for pos in self.origin_his_pos:
+                #         pg.draw.circle(screen, (255, 255, 0), (pos.x, pos.y), 2)
+                for pgrid in self.maze_grid:
+                    pg.draw.circle(screen, (255, 0, 255), (pgrid[0], pgrid[1]), 2)
+                break
+        else:
+            if not self.maze_status:
+                self.check_line()
+            self.maze_status = True
+        
+    def clear_maze(self):
+        self.origin_his = []
+        self.origin_his_pos = []
+        self.line = []
+        self.main_line = []
+        self.corner = []
+        self.visited = set() # New: Track visited cells
+        self.maze_grid = set()
+        self.maze_status = False
