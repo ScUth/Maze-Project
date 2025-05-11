@@ -83,7 +83,6 @@ I’d use the Mode, mean, median, range, IQR in this data and I’d present it i
 # Document version
 Version: *4.0*  
 Date: *31 March 2025*  
-**6\.** 
 
 |  | Why it is good to have this data? What can it be used for | How will you obtain 50 values of this feature data? | Which variable (and which class will you collect this from? | How will you display this feature data (via summarization statistics or via graph)? |
 | :---- | :---- | :---- | :---- | :---- |
@@ -94,8 +93,6 @@ Date: *31 March 2025*
 | Enemy | Analyze player aggression and enemy AI effectiveness  | Count an enemies killed per lvl | `enemies_killed` from `game` class | Bar chart |
 | Gift collected | Determine difficulty of gift colleted | Count gift obtain after Game End | `player_deaths` from `game` class | Pie chart  |
 | Bullet fired | Help improve the bullet aiming system, effectiveness of bullet used. | Count the number of times a player shoots their bullets. | `shoots_num` from `Player` | Histogram |
-
-![][image1]
 
 # Statistical Data Revision
 
