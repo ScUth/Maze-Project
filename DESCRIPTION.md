@@ -1,18 +1,19 @@
-1. ### **Project Overview**
+# **Project Overview**
 
 I’d do the maze game, find the path through the maze. The game will have many levels, the difficulty may vary to the level that you got (larger map, limited time) and also has an enemy and score.
 
-2. **Project Review**
+Youtube link : <https://youtu.be/PYSMeGPNVys>
+# **Project Review**
 
-	An existing project is a normal maze game. But mine is I’d use an algorithm to generate a maze map, I’d add the gift (free score) and the enemy to the game.
+An existing project is a normal maze game. But mine is I’d use an algorithm to generate a maze map, I’d add the gift (free score) and the enemy to the game.
 
-3. **Programming Development**
+# **Programming Development**
 
-**3.1 Game Concept**  
+## Game Concept
 This is a maze game where the player find the path to the finished,   
-But the game has 4 enemies spawn in each corner and there’s a gift somewhere in the maze.The enemy will come to you and when it touch you, you’re dead, and player have firearm that can shoot the enemy, the firearm will have a 1 second cool down with unlimited ammo and after you shoot some enemy the enemy will respawn in 1 minutes with madness, the speed of these madness enemy is x2 comparing to that enemy before death. This game also has a score system based on finished time, gift and how many do you kill the enemy. This game also has a level, if you pass you go to the next level, map larger, enemy walk faster.
+But the game has 4 enemies spawn in each corner and there’s a gift somewhere in the maze.The enemy will come to you and when it touch you, you’re dead, and player have firearm that can shoot the enemy, the firearm will have a 1 second cool down with unlimited ammo and after you shoot some enemy the enemy will respawn in 1 minutes with madness, the speed of these madness enemy is $\times 2$ comparing to that enemy before death. This game also has a score system based on finished time, gift and how many do you kill the enemy. This game also has a level, if you pass you go to the next level, map larger, enemy walk faster.
 
-**3.2  Object-Oriented Programming Implementation**
+## Object-Oriented Programming Implementation
 
 - Player   
   - Setting how the player look and interact with the game  
@@ -40,9 +41,9 @@ But the game has 4 enemies spawn in each corner and there’s a gift somewhere i
 **3.3 Algorithms Involved**  
 	The algorithms that I think it may use in this game are pathfinding(A star) and Origin Shift, where pathfinding(A star) is to find the shortest path to arrive at the player and the Origin Shift is to create the map.
 
-4. **Statistical Data (Prop Stats)**
+# Statistical Data (Prop Stats)
 
-**4.1 Data Features**
+## Data Features
 
 1. Movement : Track the position that player move e.g. up, down, left right  
 2. Time : Track how much time a player spends on each level.  
@@ -52,11 +53,11 @@ But the game has 4 enemies spawn in each corner and there’s a gift somewhere i
 6. Gift : Track how many gift that were obtained for each level.  
 7. Bullet fired : track how many bullets can kill the enemy.
 
-**3.2 Data Recording Method**  
+## Data Recording Method
 Those data will be collected in a csv file.
 
-**3.3 Data Analysis Report**  
-	I’d use the Mode, mean, median, range, IQR in this data and I’d present it in graph.
+## Data Analysis Report
+I’d use the Mode, mean, median, range, IQR in this data and I’d present it in graph.
 
 - Movement graph : to analyze the most direction that player move (histogram)  
 - Level and time : to analyze the time that player spend.  
@@ -65,7 +66,7 @@ Those data will be collected in a csv file.
 - Time vs score : to analyze score and time relationship.
 
 
-**4\. Project Timeline**
+# Project Timeline
 
 | Week | Task |
 | :---- | :---- |
@@ -79,26 +80,26 @@ Those data will be collected in a csv file.
 | 8 (23 April) | 75% |
 | 9 (11 May) | 100% |
 
-**5\. Document version**  
+# Document version
 Version: *4.0*  
 Date: *31 March 2025*  
 **6\.** 
 
 |  | Why it is good to have this data? What can it be used for | How will you obtain 50 values of this feature data? | Which variable (and which class will you collect this from? | How will you display this feature data (via summarization statistics or via graph)? |
 | :---- | :---- | :---- | :---- | :---- |
-| Movement | It can help to analyze player strategies and navigation pattern  | I’d collect it in json file as a log. 50 value obtainsion can be from 3 \- 4 game depend on player skilled | `Player_position` from \`Player\` class | summarization. |
-| Time | It’s good for observe the difficulty of levels | Record time spent after finishing the level. | \`level\_time\` from \`Game\` class | histogram |
-| Level | Helps track game difficulty progression and player improvement  | Count the highest level that players reached. For 50 rows i have to play 50 game. I’d considered with bot system | \`current\_level\` from \`game\` class | Bar chart |
-| Score | Evaluate player performance  | Final score from 50 complete game, stack the score from each lvl | \`player\_score\` from \`game\` class | Boxplot  |
-| Enemy | Analyze player aggression and enemy AI effectiveness  | Count an enemies killed per lvl | \`enemies\_killed\` from \`game\` class | Bar chart |
-| Gift collected | Determine difficulty of gift colleted | Count gift obtain after Game End | \`player\_deaths\` from \`game\` class | Pie chart  |
-| Bullet fired | Help improve the bullet aiming system, effectiveness of bullet used. | Count the number of times a player shoots their bullets. | \`shoots\_num\` from \`Player\` | Histogram |
+| Movement | It can help to analyze player strategies and navigation pattern  | I’d collect it in json file as a log. 50 value obtainsion can be from 3 \- 4 game depend on player skilled | `Player_position` from `Player` class | summarization. |
+| Time | It’s good for observe the difficulty of levels | Record time spent after finishing the level. | `level_time` from `Game` class | histogram |
+| Level | Helps track game difficulty progression and player improvement  | Count the highest level that players reached. For 50 rows i have to play 50 game. I’d considered with bot system | `current_level` from `game` class | Bar chart |
+| Score | Evaluate player performance  | Final score from 50 complete game, stack the score from each lvl | `player_score` from `game` class | Boxplot  |
+| Enemy | Analyze player aggression and enemy AI effectiveness  | Count an enemies killed per lvl | `enemies_killed` from `game` class | Bar chart |
+| Gift collected | Determine difficulty of gift colleted | Count gift obtain after Game End | `player_deaths` from `game` class | Pie chart  |
+| Bullet fired | Help improve the bullet aiming system, effectiveness of bullet used. | Count the number of times a player shoots their bullets. | `shoots_num` from `Player` | Histogram |
 
 ![][image1]
 
-**7\. Statistical Data Revision**
+# Statistical Data Revision
 
-|  | Feature Name | Graph objective | Graph type | X-axis | Y-axis |
+|  | Feature Name | Graph objective | Graph type | $x$-axis | $y$-axis |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | Graph 1 | Time | observe the difficulty of levels | heatmap | Time | Frequency  |
 | Graph 2 | Level | track game difficulty progression and player improvement | Histogram  | level | Count |
@@ -108,7 +109,7 @@ Date: *31 March 2025*
 | Graph 6 | Gift | Observe the proportions | Pie chart | \- | \- |
 | Graph 7 | Movement | Observe the proportions | Bar graph | UP, DOWN, LEFT, RIGHT | Count |
 | Graph 8 | Levels vs Time | Observe the proportions | Bar graph | Level | Time |
-| Graph 9 | Movement vs Level | Observe the transference | Line graph | Level | Movement |
+| Graph 9 | Movement vs Level | Observe the transference | Line graph | Level | Movement |
 | Graph 10 | Enemies killed vs Level | Observe the proportion | Bar graph | Level | Enemies killed |
 | Graph 11 | Score vs Play time | Observe the change | Scatter plot | time | score |
 
