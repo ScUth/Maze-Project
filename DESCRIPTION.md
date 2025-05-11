@@ -11,7 +11,7 @@ An existing project is a normal maze game. But mine is I’d use an algorithm to
 
 ## Game Concept
 This is a maze game where the player find the path to the finished,   
-But the game has 4 enemies spawn in each corner and there’s a gift somewhere in the maze.The enemy will come to you and when it touch you, you’re dead, and player have firearm that can shoot the enemy, the firearm will have a 1 second cool down with unlimited ammo and after you shoot some enemy the enemy will respawn in 1 minutes with madness, the speed of these madness enemy is $\times 2$ comparing to that enemy before death. This game also has a score system based on finished time, gift and how many do you kill the enemy. This game also has a level, if you pass you go to the next level, map larger, enemy walk faster.
+But the game has 4 enemies spawn in each corner and there’s a gift somewhere in the maze.The enemy will come to you and when it touch you, you’re dead, and player have firearm that can shoot the enemy, the firearm will have a 1 second cool down with unlimited ammo and after you shoot some enemy the enemy will respawn in 1 minutes with madness, the speed of these madness enemy is $\times 2$ comparing to that enemy before death. This game also has a score system based on finished time, gift and how many do you kill the enemy. This game also has a level, if you pass you go to the next level, enemy walk faster.
 
 ## Object-Oriented Programming Implementation
 
@@ -38,8 +38,8 @@ But the game has 4 enemies spawn in each corner and there’s a gift somewhere i
 - Bullet  
   - Draw and update the bullet
 
-**3.3 Algorithms Involved**  
-	The algorithms that I think it may use in this game are pathfinding(A star) and Origin Shift, where pathfinding(A star) is to find the shortest path to arrive at the player and the Origin Shift is to create the map.
+## Algorithms Involved
+The algorithms that I think it may use in this game are pathfinding(A star) and Origin Shift, where pathfinding(A star) is to find the shortest path to arrive at the player and the Origin Shift is to create the map.
 
 # Statistical Data (Prop Stats)
 
