@@ -7,16 +7,18 @@ from tconfig import Config
 class Player:
     __config = Config_json("config.json")
 
-    def __init__(self):
+    def __init__(self, lvl):
         self.__config._load_json()
         self.x, self.y = Config.get('MAZE_PROPERTY', 'STARTING_POINT')[
             0], Config.get('MAZE_PROPERTY', 'STARTING_POINT')[1]
-        self.speed = 5
+        self.speed = 2 * (lvl+1)
         self.score = 0
         self.Player_position = None
         self.shoots_num = 0
         self.p_size = self.__config._get_data("MAZE", "box_size") // 5
         self.direction = 0  # radian
+        self.bullets = []
+        self.shoot_cooldown = 0
 
     def get_vertices(self):
         """Calculate the three vertices of the triangle"""
@@ -39,21 +41,20 @@ class Player:
         pg.draw.polygon(screen, (255, 0, 0), vertices)
 
     def move(self, walls):
-        # print(Config.KEY[key])
         keys = pg.key.get_pressed()
         move_x, move_y = 0, 0
         new_direction = self.direction
 
-        if keys[pg.K_LEFT]:
+        if keys[pg.K_LEFT] or keys[pg.K_a]:
             move_x = -1
-            self.direction = math.pi
-        if keys[pg.K_RIGHT]:
+            new_direction = math.pi
+        if keys[pg.K_RIGHT] or keys[pg.K_d]:
             move_x = 1
-            self.direction = 0
-        if keys[pg.K_UP]:
+            new_direction = 0
+        if keys[pg.K_UP] or keys[pg.K_w]:
             move_y = -1
             new_direction = -math.pi / 2
-        if keys[pg.K_DOWN]:
+        if keys[pg.K_DOWN] or keys[pg.K_s]:
             move_y = 1
             new_direction = math.pi / 2
 
@@ -69,64 +70,55 @@ class Player:
             elif move_x < 0 and move_y > 0:  # Left-down
                 new_direction = 3 * math.pi / 4
 
-        # self.x += move_x * self.speed
-        # self.y += move_y * self.speed
+        # Try full movement first
         new_x = self.x + move_x * self.speed
         new_y = self.y + move_y * self.speed
-    
-        # Try X movement first
-        if move_x != 0:
+        
+        if not self.check_maze_collision(walls, new_x, new_y):
+            self.x = new_x
+            self.y = new_y
+        else:
+            # Try X movement only
             new_x = self.x + move_x * self.speed
             if not self.check_maze_collision(walls, new_x, self.y):
                 self.x = new_x
-            else:
-                # Try sliding by checking just Y movement
-                if move_y != 0:
-                    new_y = self.y + move_y * self.speed
-                    if not self.check_maze_collision(walls, self.x, new_y):
-                        self.y = new_y
-        
-        # Then try Y movement
-        if move_y != 0:
+            # Try Y movement only
             new_y = self.y + move_y * self.speed
             if not self.check_maze_collision(walls, self.x, new_y):
                 self.y = new_y
-            else:
-                # Try sliding by checking just X movement
-                if move_x != 0:
-                    new_x = self.x + move_x * self.speed
-                    if not self.check_maze_collision(walls, new_x, self.y):
-                        self.x = new_x
-    
+
         # Update direction only if movement occurred
-            if move_x != 0 or move_y != 0:
-                self.direction = new_direction
+        if move_x != 0 or move_y != 0:
+            self.direction = new_direction
 
     def check_maze_collision(self, walls, new_x, new_y):
-        # check that next position player moving to have any walls?
-        tmp_vertices = self.get_vertices_pos(new_x, new_y, self.direction)
+        radius = self.p_size * 0.9  # Slightly smaller than triangle to feel smooth
 
-        player_edges = [
-            (tmp_vertices[0], tmp_vertices[1]),
-            (tmp_vertices[1], tmp_vertices[2]),
-            (tmp_vertices[2], tmp_vertices[0])
-        ]
-        
-        # Check each player edge against each wall
-        for edge_start, edge_end in player_edges:
-            for wall in walls:
-                if self.segments_intersect(edge_start, edge_end, wall['start'], wall['end']):
-                    # print("amogus")###################################################################
-                    return True
-        
-        # Additional check: see if any player vertex is inside a wall (for corner cases)
-        for vertex in tmp_vertices:
-            if self.point_near_wall(vertex, walls):
+        for wall in walls:
+            if self.circle_near_wall((new_x, new_y), radius, wall):
                 return True
-                
         return False
     
-    def point_near_wall(self, point, walls, threshold=3):
+    def circle_near_wall(self, center, radius, wall):
+        """Check if a circle (player) is too close to a wall line segment"""
+        cx, cy = center
+        x1, y1 = wall['start']
+        x2, y2 = wall['end']
+
+        line_length = math.hypot(x2 - x1, y2 - y1)
+        if line_length == 0:
+            return math.hypot(cx - x1, cy - y1) < radius
+
+        # Projection factor
+        u = ((cx - x1) * (x2 - x1) + (cy - y1) * (y2 - y1)) / (line_length ** 2)
+        u = max(0, min(1, u))
+        proj_x = x1 + u * (x2 - x1)
+        proj_y = y1 + u * (y2 - y1)
+
+        dist = math.hypot(cx - proj_x, cy - proj_y)
+        return dist < radius
+    
+    def point_near_wall(self, point, walls, threshold=2):
         """Check if a point is very close to any wall"""
         px, py = point
         for wall in walls:
@@ -172,13 +164,78 @@ class Player:
         self.y = max(self.p_size, min(screen_height - self.p_size, self.y))
 
     def shoot(self):
-        pass
+        if self.shoot_cooldown <= 0:
+            # Create a new bullet at player's position facing current direction
+            bullet_x = self.x + self.p_size * math.cos(self.direction)
+            bullet_y = self.y + self.p_size * math.sin(self.direction)
+            self.bullets.append(Bullet(bullet_x, bullet_y, self.direction))
+            self.shoot_cooldown = 10  # 10 frames cooldown (about 0.16 seconds at 60fps)
+            self.shoots_num += 1
+    
+    def update_bullets(self, walls):
+        for bullet in self.bullets[:]:  # Iterate over a copy to allow removal
+            bullet.update()
+            bullet.check_collision(walls)
+            if not bullet.active:
+                self.bullets.remove(bullet)
 
-    def take_damage(self):
-        pass
-
-    def collect_gift(self):
-        pass
+        # Update shoot cooldown
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+            
+    def draw_bullets(self, screen):
+        for bullet in self.bullets:
+            bullet.draw(screen)
 
     def get_position(self):
         return (self.x, self.y)
+
+class Bullet:
+    def __init__(self, x, y, direction, speed=10, radius=5):
+        self.x = x
+        self.y = y
+        self.direction = direction
+        self.speed = speed
+        self.radius = radius
+        self.lifetime = 60  # frames before bullet disappears (1 second at 60fps)
+        self.active = True
+
+    def update(self):
+        # Move bullet based on direction and speed
+        self.x += self.speed * math.cos(self.direction)
+        self.y += self.speed * math.sin(self.direction)
+        self.lifetime -= 1
+        if self.lifetime <= 0:
+            self.active = False
+
+    def draw(self, screen):
+        pg.draw.circle(screen, (255, 255, 255), (int(self.x), int(self.y)), self.radius)
+
+    def check_collision(self, walls):
+        # Check if bullet hits any walls
+        for wall in walls:
+            if self.point_near_wall((self.x, self.y), wall, self.radius):
+                self.active = False
+                return True
+        return False
+
+    def point_near_wall(self, point, wall, threshold):
+        """Check if a point is very close to a wall"""
+        px, py = point
+        x1, y1 = wall['start']
+        x2, y2 = wall['end']
+        
+        # Check distance from point to line segment
+        line_length = math.hypot(x2-x1, y2-y1)
+        if line_length == 0:  # Skip zero-length walls
+            return False
+            
+        # Calculate projection
+        u = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / (line_length**2)
+        u = max(0, min(1, u))
+        proj_x = x1 + u * (x2 - x1)
+        proj_y = y1 + u * (y2 - y1)
+        
+        # Check distance to projection
+        dist = math.hypot(px - proj_x, py - proj_y)
+        return dist < threshold

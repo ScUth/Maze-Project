@@ -4,6 +4,8 @@ from data_json import Config_json
 import math
 import random as rd
 from tconfig import Config
+from collections import defaultdict
+import datetime as dt
 
 class Maze_Gen:
     __config = Config_json("config.json")
@@ -32,8 +34,11 @@ class Maze_Gen:
         # self.shift_time = 600
         self.current_shifts = 0
         self.total = math.ceil(self.mapheight/self.box_size) * math.ceil(self.mapwidth/self.box_size)
+        
+        # setting
         self.maze_status = False
         self.combine_status = False
+        self.image_status = False
         
         # set config
         Config.set('MAZE_PROPERTY', 'BOTTOM_RIGHT', (self.drawGrid()[-1].x, self.drawGrid()[-1].y))
@@ -113,12 +118,8 @@ class Maze_Gen:
         return True
             
     def check_line(self):
-        # for dot in self.maze_grid:
-        #     if (dot[0] + self.box_size, dot[1]) in self.maze_grid:
-        #         # print(self.line)
-        #         pg.draw.line(screen, (255, 255, 0), (dot[0], dot[1]), (dot[0] + self.box_size, dot[1]))
-        #     if (dot[0], dot[1] + self.box_size) in self.maze_grid:
-        #         pg.draw.line(screen, (255, 255, 0), (dot[0], dot[1]), (dot[0], dot[1] + self.box_size))###################
+        # self.main_line is equal to {'start': (325, 345), 'end': (355, 345)}
+        
         for dot in self.maze_grid:
             right_line = {'start': (dot[0], dot[1]), 'end': (dot[0] + self.box_size, dot[1])}
             if self.can_draw_line(right_line, self.line):
@@ -128,7 +129,8 @@ class Maze_Gen:
             if self.can_draw_line(down_line, self.line):
                 if down_line not in self.main_line and (dot[0], dot[1] + self.box_size) in self.maze_grid:
                     self.main_line.append(down_line)
-                
+        print(f"[{dt.datetime.now().strftime('%X')}] Line is now computed.")
+        
     def get_main_line(self):
         return self.main_line
     
@@ -170,6 +172,9 @@ class Maze_Gen:
         # useless function
         return self.drawGrid()
     
+    def get_status(self):
+        return self.image_status
+    
     def update_maze(self):
         if len(self.origin_his) >= 1:
             previous_origin = self.origin_his_pos[-1]
@@ -192,16 +197,57 @@ class Maze_Gen:
                 end = (rect.x, rect.y + self.box_size)  # move right
             self.line.append({"start": start, "end": end})
     
-    # def combine_line(self):
-    #     # for combine the continuous line
-    #     # for line in self.main_line:
-    #     #     pass
-    #     self.com
+    def merge_segments(self, segments):
 
-    def draw_maze(self, x, y, screen):
-        if self.maze_status:
-            for line in self.main_line:
-                pg.draw.line(screen, (255, 255, 0), line["start"], line["end"])
+        vertical_lines = defaultdict(list)
+        horizontal_lines = defaultdict(list)
+
+        # Classify segments into vertical and horizontal
+        for seg in segments:
+            x1, y1 = seg['start']
+            x2, y2 = seg['end']
+            if x1 == x2:
+                # Vertical line
+                vertical_lines[x1].append(sorted([y1, y2]))
+            elif y1 == y2:
+                # Horizontal line
+                horizontal_lines[y1].append(sorted([x1, x2]))
+            else:
+                raise ValueError(f"Segment {seg} is not axis-aligned (not purely vertical or horizontal)")
+
+        def merge_intervals(intervals):
+            intervals.sort()
+            merged = []
+            for start, end in intervals:
+                if not merged or merged[-1][1] < start:
+                    merged.append([start, end])
+                else:
+                    merged[-1][1] = max(merged[-1][1], end)
+            return merged
+
+        merged_segments = []
+
+        # Process vertical lines
+        for x, y_intervals in vertical_lines.items():
+            merged_y = merge_intervals(y_intervals)
+            for y1, y2 in merged_y:
+                merged_segments.append({'start': (x, y1), 'end': (x, y2)})
+
+        # Process horizontal lines
+        for y, x_intervals in horizontal_lines.items():
+            merged_x = merge_intervals(x_intervals)
+            for x1, x2 in merged_x:
+                merged_segments.append({'start': (x1, y), 'end': (x2, y)})
+
+        self.combine_status = True
+        print(f"[{dt.datetime.now().strftime('%X')}] Merging line. Ready for drawing.")
+        return merged_segments
+
+
+    def draw_maze(self, screen):
+        # if self.maze_status:
+        #     for line in self.main_line:
+        #         pg.draw.line(screen, (255, 255, 0), line["start"], line["end"], 1)
 
         if len(self.visited) < self.total: # +1 until got the self.shift_time then stop shifting
             for _ in range(10):
@@ -221,7 +267,41 @@ class Maze_Gen:
         else:
             if not self.maze_status:
                 self.check_line()
+            if not self.combine_status:
+                self.main_line = self.merge_segments(self.main_line)
+                print(f"[{dt.datetime.now().strftime('%X')}] Drawing complete.")
+                self.save_maze_image()
             self.maze_status = True
+            
+    def save_maze_image(self):
+        """Save just the maze portion, sized to fit the maze grid exactly."""
+        # Calculate maze boundaries from maze_grid
+        all_x = [point[0] for point in self.maze_grid]
+        all_y = [point[1] for point in self.maze_grid]
+        min_x, max_x = min(all_x) + 2, max(all_x)
+        min_y, max_y = min(all_y) + 2, max(all_y)
+        
+        # Calculate dimensions with 2px padding
+        width = max_x - min_x + 4
+        height = max_y - min_y + 4
+        
+        # Create surface with calculated dimensions
+        maze_surface = pg.Surface((width, height))
+        maze_surface.fill((0, 0, 0))  # Black background
+        
+        # Draw all lines adjusted to the surface coordinates
+        for line in self.main_line:
+            # Adjust coordinates relative to maze boundaries
+            adj_start = (line["start"][0] - min_x + 2, line["start"][1] - min_y + 2)
+            adj_end = (line["end"][0] - min_x + 2, line["end"][1] - min_y + 2)
+            pg.draw.line(maze_surface, (255, 255, 255), adj_start, adj_end, 1)
+        
+        # Save with timestamp
+        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"maze.png"
+        pg.image.save(maze_surface, filename)
+        self.image_status = True
+        print(f"[{dt.datetime.now().strftime('%X')}] Maze saved as {filename} (Dimensions: {width}x{height})")
         
     def clear_maze(self):
         self.origin_his = []
@@ -232,3 +312,5 @@ class Maze_Gen:
         self.visited = set() # New: Track visited cells
         self.maze_grid = set()
         self.maze_status = False
+        self.combine_status = False
+        self.image_status = False

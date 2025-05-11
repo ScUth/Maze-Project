@@ -5,12 +5,12 @@ class Config:
         'COLOR_BLACK' : (0, 0, 0),
         'COLOR_WHITE' : (255, 255, 255)
     }
-    # KEY = {
-    #     pg.K_UP: "UP",
-    #     pg.K_DOWN: "DOWN",
-    #     pg.K_LEFT: "LEFT",
-    #     pg.K_RIGHT: "RIGHT"
-    # }
+    KEY = {
+        pg.K_UP: "UP",
+        pg.K_DOWN: "DOWN",
+        pg.K_LEFT: "LEFT",
+        pg.K_RIGHT: "RIGHT"
+    }
     MAZE_PROPERTY = {
         'STARTING_POINT' : (50, 50),
         'ENDING_POINT' : 0,
