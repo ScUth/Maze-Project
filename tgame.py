@@ -104,7 +104,7 @@ class Game:
                 if event.key == pg.K_u:
                     root = tk.Tk()
                     root.title("Data Analysis")
-                    root.geometry("600x600")
+                    root.geometry("900x600")
                     data = Data(root)
                     root.mainloop()
     
@@ -303,7 +303,7 @@ class Game:
                                 elif event.key == pg.K_u:
                                     root = tk.Tk()
                                     root.title("Data Analysis (pause)")
-                                    root.geometry("600x600")
+                                    root.geometry("900x600")
                                     data = Data(root)
                                     root.mainloop()
             
